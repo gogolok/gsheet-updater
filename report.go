@@ -52,7 +52,7 @@ func (r Report) Update() error {
 
 		hours, ok := r.hoursByTag[tag]
 		if !ok {
-			return fmt.Errorf("No hours found for tag %v", tag)
+			hours = 0.0
 		}
 
 		// One cell right we write the values for the cells
