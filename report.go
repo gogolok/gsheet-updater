@@ -7,23 +7,29 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-type Report struct {
+type reportBase struct {
 	spreadsheetId string
 	client        *http.Client
-	hoursByTag    map[string]float64
-	tabId         string
 }
 
-func NewReport(spreadsheetId string, client *http.Client, hoursByTag map[string]float64, tabId string) Report {
-	return Report{
-		spreadsheetId: spreadsheetId,
-		client:        client,
-		hoursByTag:    hoursByTag,
-		tabId:         tabId,
+type LaneReport struct {
+	reportBase
+	hoursByTag map[string]float64
+	tabId      string
+}
+
+func NewLaneReport(spreadsheetId string, client *http.Client, hoursByTag map[string]float64, tabId string) LaneReport {
+	return LaneReport{
+		reportBase: reportBase{
+			spreadsheetId: spreadsheetId,
+			client:        client,
+		},
+		hoursByTag: hoursByTag,
+		tabId:      tabId,
 	}
 }
 
-func (r Report) Update() error {
+func (r LaneReport) Update() error {
 	srv, err := sheets.New(r.client)
 	if err != nil {
 		return err

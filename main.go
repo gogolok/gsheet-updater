@@ -34,7 +34,7 @@ func main() {
 		log.Fatalf("SPREADSHEET_ID not set")
 	}
 
-	report := NewReport(spreadsheetId, client, hoursByTag, tabId)
+	report := NewLaneReport(spreadsheetId, client, hoursByTag, tabId)
 	err = report.Update()
 	if err != nil {
 		log.Fatalf("Unable to update report: %v", err)
