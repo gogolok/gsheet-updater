@@ -4,9 +4,51 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-func main() {
+// rootCmd represents the root Cobra command
+var rootCmd = &cobra.Command{
+	Use:   "gsheet-updater",
+	Short: "gsheet-udpater is a CLI to update lanes in google docs.",
+	Long:  `gsheet-udpater is a CLI to update lanes in google docs.`,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		return nil
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(newLaneReport())
+	rootCmd.AddCommand(newHoursReport())
+}
+
+func newLaneReport() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "lane",
+		Short: "Lane time entries by given tags",
+		Long:  `Lane time entries by given tags.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return laneReport()
+		},
+	}
+
+	return cmd
+}
+
+func newHoursReport() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "hours",
+		Short: "Spent hours by given tags",
+		Long:  `Spent hours by given tags.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return hoursReport()
+		},
+	}
+
+	return cmd
+}
+
+func laneReport() error {
 	client, err := NewClient()
 	if err != nil {
 		log.Fatalln(err)
@@ -35,8 +77,15 @@ func main() {
 	}
 
 	report := NewLaneReport(spreadsheetId, client, hoursByTag, tabId)
-	err = report.Update()
-	if err != nil {
-		log.Fatalf("Unable to update report: %v", err)
+	return report.Update()
+}
+
+func hoursReport() error {
+	return nil
+}
+
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
 	}
 }
