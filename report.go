@@ -104,12 +104,11 @@ func (r HoursReport) Update() error {
 
 	sort.Sort(sort.Reverse(hoursSortedEntries(r.entries)))
 
-	maxEntries := 50
-
-	// Location of the cells
-	rowOffset := 18
+	maxEntries := 50 // We assume we will have max 50 rows to fill
+	rowOffset := 18  // Location of the cells
 
 	entriesLen := len(r.entries)
+	values := [][]interface{}{}
 	for idx := 0; idx < maxEntries; idx++ {
 		tag := ""
 		hours := ""
@@ -118,29 +117,21 @@ func (r HoursReport) Update() error {
 			tag = r.entries[idx].Tag
 		}
 
-		mytag := []interface{}{tag}
-		myval := []interface{}{hours}
+		values = append(values, []interface{}{tag, hours})
 		fmt.Printf("%v: %v %v\n", idx, tag, hours)
-
-		var tr sheets.ValueRange
-		tr.Values = append(tr.Values, mytag)
-		writeRange := fmt.Sprintf("%s!G%d", r.tabId, idx+rowOffset)
-		_, err := srv.Spreadsheets.Values.Update(r.spreadsheetId, writeRange, &tr).ValueInputOption("RAW").Do()
-		if err != nil {
-			return err
-		}
-
-		// One cell right we write the values for the cells
-		var vr sheets.ValueRange
-		vr.Values = append(vr.Values, myval)
-		writeRange = fmt.Sprintf("%s!H%d", r.tabId, idx+rowOffset)
-		_, err = srv.Spreadsheets.Values.Update(r.spreadsheetId, writeRange, &vr).ValueInputOption("RAW").Do()
-		if err != nil {
-			return err
-		}
 	}
 
-	return nil
+	rangeData := fmt.Sprintf("%s!G%d:H%d", r.tabId, rowOffset, rowOffset+maxEntries)
+	rb := &sheets.BatchUpdateValuesRequest{
+		ValueInputOption: "USER_ENTERED",
+	}
+	rb.Data = append(rb.Data, &sheets.ValueRange{
+		Range:  rangeData,
+		Values: values,
+	})
+
+	_, err = srv.Spreadsheets.Values.BatchUpdate(r.spreadsheetId, rb).Do()
+	return err
 }
 
 type hoursSortedEntries []hourTagEntry
