@@ -39,7 +39,7 @@ func (r LaneReport) Update() error {
 
 	// Location of the tag cells
 	rowOffset := 4
-	noTags := 8
+	noTags := 10
 	cellRange := fmt.Sprintf("A%v:A%v", rowOffset, rowOffset+noTags-1)
 	readRange := fmt.Sprintf("%s!%s", r.tabId, cellRange)
 
@@ -105,7 +105,7 @@ func (r HoursReport) Update() error {
 	sort.Sort(sort.Reverse(hoursSortedEntries(r.entries)))
 
 	maxEntries := 50 // We assume we will have max 50 rows to fill
-	rowOffset := 18  // Location of the cells
+	rowOffset := 19  // Location of the cells
 
 	entriesLen := len(r.entries)
 	values := [][]interface{}{}
