@@ -1,10 +1,19 @@
 package main
 
 import (
+	"fmt"
+	"io"
 	"os"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+)
+
+var Version = undefinedVersion
+
+const (
+	// undefinedVersion should take the form `channel-version`
+	undefinedVersion = "dev-undefined"
 )
 
 // rootCmd represents the root Cobra command
@@ -18,8 +27,46 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
+	rootCmd.AddCommand(newCmdVersion())
 	rootCmd.AddCommand(newLaneReport())
 	rootCmd.AddCommand(newHoursReport())
+}
+
+type versionOptions struct {
+	shortVersion bool
+}
+
+func newVersionOptions() *versionOptions {
+	return &versionOptions{
+		shortVersion: false,
+	}
+}
+
+func newCmdVersion() *cobra.Command {
+	options := newVersionOptions()
+
+	cmd := &cobra.Command{
+		Use:   "version",
+		Short: "Print the client version information",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			runVersion(options, os.Stdout)
+		},
+	}
+
+	cmd.PersistentFlags().BoolVar(&options.shortVersion, "short", options.shortVersion, "Print the version number(s) only, with no additional output")
+
+	return cmd
+}
+
+func runVersion(options *versionOptions, stdout io.Writer) {
+	clientVersion := Version
+
+	if options.shortVersion {
+		fmt.Fprintln(stdout, clientVersion)
+	} else {
+		fmt.Fprintf(stdout, "Client version: %s\n", clientVersion)
+	}
 }
 
 func newLaneReport() *cobra.Command {
