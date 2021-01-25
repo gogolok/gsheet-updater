@@ -1,5 +1,14 @@
 # gsheet-updater
 
+# Installation
+
+```shell
+brew tap gogolok/tap
+brew install gsheet-updater
+```
+
+# Usage
+
 ```shell
 export SPREADSHEET_ID="1WBAxWCxUQt9HXDWIbPXlQpKydYHvo2LUg5R4A-3d3LQ"
 export FILE="hoursbytag.csv"
