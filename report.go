@@ -81,20 +81,22 @@ func (r LaneReport) Update() error {
 
 type HoursReport struct {
 	reportBase
-	entries    []hourTagEntry
-	tabId      string
-	maxEntries int
+	entries     []hourTagEntry
+	tabId       string
+	maxEntries  int
+	startColumn byte
 }
 
-func NewHoursReport(spreadsheetId string, client *http.Client, entries []hourTagEntry, tabId string, maxEntries int) HoursReport {
+func NewHoursReport(spreadsheetId string, client *http.Client, entries []hourTagEntry, tabId string, maxEntries int, startColumn byte) HoursReport {
 	return HoursReport{
 		reportBase: reportBase{
 			spreadsheetId: spreadsheetId,
 			client:        client,
 		},
-		entries:    entries,
-		tabId:      tabId,
-		maxEntries: maxEntries,
+		entries:     entries,
+		tabId:       tabId,
+		maxEntries:  maxEntries,
+		startColumn: startColumn,
 	}
 }
 
@@ -122,7 +124,9 @@ func (r HoursReport) Update() error {
 		fmt.Printf("%v: %v %v\n", idx, tag, hours)
 	}
 
-	rangeData := fmt.Sprintf("%s!G%d:H%d", r.tabId, rowOffset, rowOffset+r.maxEntries)
+	secondColumn := int(r.startColumn) + 1
+
+	rangeData := fmt.Sprintf("%s!%s%d:%s%d", r.tabId, string(r.startColumn), rowOffset, string(secondColumn), rowOffset+r.maxEntries)
 	rb := &sheets.BatchUpdateValuesRequest{
 		ValueInputOption: "USER_ENTERED",
 	}
