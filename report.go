@@ -81,18 +81,20 @@ func (r LaneReport) Update() error {
 
 type HoursReport struct {
 	reportBase
-	entries []hourTagEntry
-	tabId   string
+	entries    []hourTagEntry
+	tabId      string
+	maxEntries int
 }
 
-func NewHoursReport(spreadsheetId string, client *http.Client, entries []hourTagEntry, tabId string) HoursReport {
+func NewHoursReport(spreadsheetId string, client *http.Client, entries []hourTagEntry, tabId string, maxEntries int) HoursReport {
 	return HoursReport{
 		reportBase: reportBase{
 			spreadsheetId: spreadsheetId,
 			client:        client,
 		},
-		entries: entries,
-		tabId:   tabId,
+		entries:    entries,
+		tabId:      tabId,
+		maxEntries: maxEntries,
 	}
 }
 
@@ -104,12 +106,11 @@ func (r HoursReport) Update() error {
 
 	sort.Sort(sort.Reverse(hoursSortedEntries(r.entries)))
 
-	maxEntries := 50 // We assume we will have max 50 rows to fill
-	rowOffset := 19  // Location of the cells
+	rowOffset := 19 // Location of the cells
 
 	entriesLen := len(r.entries)
 	values := [][]interface{}{}
-	for idx := 0; idx < maxEntries; idx++ {
+	for idx := 0; idx < r.maxEntries; idx++ {
 		tag := ""
 		hours := ""
 		if idx < entriesLen {
@@ -121,7 +122,7 @@ func (r HoursReport) Update() error {
 		fmt.Printf("%v: %v %v\n", idx, tag, hours)
 	}
 
-	rangeData := fmt.Sprintf("%s!G%d:H%d", r.tabId, rowOffset, rowOffset+maxEntries)
+	rangeData := fmt.Sprintf("%s!G%d:H%d", r.tabId, rowOffset, rowOffset+r.maxEntries)
 	rb := &sheets.BatchUpdateValuesRequest{
 		ValueInputOption: "USER_ENTERED",
 	}

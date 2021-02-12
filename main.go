@@ -88,10 +88,12 @@ func newHoursReport() *cobra.Command {
 		Short: "Spent hours per pattern",
 		Long:  `Spent hours per pattern.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return hoursReport()
+			maxEntries, _ := cmd.Flags().GetInt("max-entries")
+			return hoursReport(maxEntries)
 		},
 	}
 
+	cmd.Flags().IntP("max-entries", "m", 50, "Max entries to consider.")
 	return cmd
 }
 
@@ -127,7 +129,7 @@ func laneReport() error {
 	return report.Update()
 }
 
-func hoursReport() error {
+func hoursReport(maxEntries int) error {
 	client, err := NewClient()
 	if err != nil {
 		log.Fatalln(err)
@@ -155,7 +157,7 @@ func hoursReport() error {
 		log.Fatalf("SPREADSHEET_ID not set")
 	}
 
-	report := NewHoursReport(spreadsheetId, client, hoursByTag, tabId)
+	report := NewHoursReport(spreadsheetId, client, hoursByTag, tabId, maxEntries)
 	return report.Update()
 }
 
