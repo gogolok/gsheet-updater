@@ -39,7 +39,7 @@ func (r LaneReport) Update() error {
 
 	// Location of the tag cells
 	rowOffset := 4
-	noTags := 10
+	noTags := 11
 	cellRange := fmt.Sprintf("A%v:A%v", rowOffset, rowOffset+noTags-1)
 	readRange := fmt.Sprintf("%s!%s", r.tabId, cellRange)
 
