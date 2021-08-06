@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"time"
 
 	"google.golang.org/api/sheets/v4"
 )
@@ -137,6 +138,45 @@ func (r HoursReport) Update() error {
 
 	_, err = srv.Spreadsheets.Values.BatchUpdate(r.spreadsheetId, rb).Do()
 	return err
+}
+
+type LastRunTimestampReport struct {
+	reportBase
+	tabId string
+}
+
+func NewLastRunTimestampReport(spreadsheetId string, client *http.Client, tabId string) LastRunTimestampReport {
+	return LastRunTimestampReport{
+		reportBase: reportBase{
+			spreadsheetId: spreadsheetId,
+			client:        client,
+		},
+		tabId: tabId,
+	}
+}
+
+func (r LastRunTimestampReport) Update() error {
+	now := time.Now()
+	loc, _ := time.LoadLocation("Europe/Berlin")
+	timestamp := now.In(loc)
+
+	srv, err := sheets.New(r.client)
+	if err != nil {
+		return err
+	}
+
+	var vr sheets.ValueRange
+	myval := []interface{}{timestamp}
+	vr.Values = append(vr.Values, myval)
+	writeRange := fmt.Sprintf("%s!D2", r.tabId)
+	_, err = srv.Spreadsheets.Values.Update(r.spreadsheetId, writeRange, &vr).ValueInputOption("RAW").Do()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("D2 %v\n", timestamp)
+
+	return nil
 }
 
 type hoursSortedEntries []hourTagEntry

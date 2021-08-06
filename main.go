@@ -30,6 +30,7 @@ func init() {
 	rootCmd.AddCommand(newCmdVersion())
 	rootCmd.AddCommand(newLaneReport())
 	rootCmd.AddCommand(newHoursReport())
+	rootCmd.AddCommand(newLastRunTimestamp())
 }
 
 type versionOptions struct {
@@ -103,6 +104,22 @@ func newHoursReport() *cobra.Command {
 	return cmd
 }
 
+func newLastRunTimestamp() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "last-run-timestamp",
+		Short: "Write timestamp of last run",
+		Long:  `Write the current time as timestamp into the sheet so we're aware when the tool ran the last time`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return lastRunTimestamp()
+		},
+	}
+
+	cmd.Flags().IntP("max-entries", "m", 50, "Max entries to consider.")
+	cmd.Flags().StringP("start-column", "c", "G", "What column to write entries to.")
+
+	return cmd
+}
+
 func laneReport() error {
 	client, err := NewClient()
 	if err != nil {
@@ -164,6 +181,28 @@ func hoursReport(maxEntries int, startColumn byte) error {
 	}
 
 	report := NewHoursReport(spreadsheetId, client, hoursByTag, tabId, maxEntries, startColumn)
+	return report.Update()
+}
+
+func lastRunTimestamp() error {
+	client, err := NewClient()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	tabId := os.Getenv("TAB_ID")
+	if len(tabId) < 1 {
+		log.Fatalf("Environment variable TAB_ID must be set.")
+	}
+
+	// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+	// -> spreadsheetId = 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms
+	spreadsheetId := os.Getenv("SPREADSHEET_ID")
+	if len(spreadsheetId) < 1 {
+		log.Fatalf("SPREADSHEET_ID not set")
+	}
+
+	report := NewLastRunTimestampReport(spreadsheetId, client, tabId)
 	return report.Update()
 }
 
