@@ -7,6 +7,19 @@ brew tap gogolok/tap
 brew install gsheet-updater
 ```
 
+# Authentication/Authorization
+
+https://developers.google.com/workspace/guides/create-credentials
+
+You can optionally use a service account to modify the Google sheet.
+
+```
+export SERVICE_ACCOUNT="myservice-account@example.iam.gservuceaccount.com"
+export PRIVATE_KEY="-----BEGIN PRIVATE KEY----
+MII...
+-----END PRIVATE KEY-----"
+```
+
 # Usage
 
 ```shell

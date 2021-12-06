@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,9 +12,33 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"golang.org/x/oauth2/jwt"
 )
 
 func NewClient() (*http.Client, error) {
+	serviceAccount := os.Getenv("SERVICE_ACCOUNT")
+	if len(serviceAccount) > 0 {
+		privateKey := os.Getenv("PRIVATE_KEY")
+		if len(privateKey) < 1 {
+			return nil, errors.New("Environment variable PRIVATE_KEY not set")
+		}
+
+		conf := &jwt.Config{
+			Email:      serviceAccount,
+			PrivateKey: []byte(privateKey),
+			Scopes: []string{
+				"https://www.googleapis.com/auth/spreadsheets",
+			},
+			TokenURL: google.JWTTokenURL,
+		}
+
+		return conf.Client(oauth2.NoContext), nil
+	}
+
+	/**
+	 * Proceed with 'old' method if service account is not being used.
+	 */
+
 	b, err := ioutil.ReadFile("credentials.json")
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read client secret file: %v", err)
